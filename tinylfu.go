@@ -1,4 +1,5 @@
-package local
+//go:generate mockery
+package lfu
 
 import (
 	"math/rand/v2"

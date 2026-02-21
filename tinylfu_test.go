@@ -1,4 +1,4 @@
-package local
+package lfu
 
 import (
 	"context"
@@ -9,10 +9,7 @@ import (
 
 	"github.com/dsh2dsh/go-tinylfu"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-
-	mocks "github.com/dsh2dsh/expx-cache/internal/mocks/local"
 )
 
 const testKey = "mykey"
@@ -124,15 +121,15 @@ func TestTinyLFU_Set_offset(t *testing.T) {
 	localCache := NewTinyLFU(1000, ttl)
 	require.NotNil(t, localCache)
 
-	lfu := mocks.NewMockLFU(t)
+	var expireAt time.Time
+	lfu := &MoqLFU{
+		SetFunc: func(item *tinylfu.Item[[]byte]) {
+			expireAt = item.ExpireAt
+		},
+	}
 	localCache.lfu = lfu
 
 	start := time.Now().Add(ttl)
-	var expireAt time.Time
-	lfu.EXPECT().Set(mock.Anything).Run(func(item *tinylfu.Item[[]byte]) {
-		expireAt = item.ExpireAt
-	})
-
 	localCache.Set(testKey, []byte("a string"))
 	assert.WithinRange(t, expireAt, start, time.Now().Add(ttl+localCache.offset))
 }
@@ -140,6 +137,6 @@ func TestTinyLFU_Set_offset(t *testing.T) {
 func TestTinyLFU_Set_nil(t *testing.T) {
 	localCache := NewTinyLFU(1000, 10*time.Second)
 	require.NotNil(t, localCache)
-	localCache.lfu = mocks.NewMockLFU(t)
+	localCache.lfu = &MoqLFU{}
 	localCache.Set(testKey, nil)
 }

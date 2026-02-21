@@ -1,0 +1,10 @@
+dir: ""
+filename: "moq_{{.InterfaceName}}_test.go"
+structname: "Moq{{.InterfaceName}}"
+template: "matryer"
+template-data:
+  with-resets: true
+packages:
+  "github.com/dsh2dsh/expx-cache-lfu":
+    interfaces:
+      "LFU":
