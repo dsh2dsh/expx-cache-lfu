@@ -1,7 +1,6 @@
 package lfu
 
 import (
-	"context"
 	"fmt"
 	"math/rand/v2"
 	"testing"
@@ -51,11 +50,10 @@ func TestCache_Get_CorruptionOnExpiry(t *testing.T) {
 		cache.Set(key, []byte(strFor(i)))
 	}
 
-	// Read stuff for a bit longer than the TTL - that's when the corruption occurs
-	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
-	defer cancel()
+	// Read stuff for a bit longer than the TTL - that's when the corruption
+	// occurs.
+	done := time.After(2 * time.Second)
 
-	done := ctx.Done()
 loop:
 	for {
 		select {
