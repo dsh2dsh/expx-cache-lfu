@@ -15,29 +15,29 @@ type LFU interface {
 	Del(key string)
 }
 
-func NewTinyLFU(size int, ttl time.Duration) *TinyLFU {
+func New(size int, ttl time.Duration) *Cache {
 	const maxOffset = 10 * time.Second
 	offset := min(maxOffset, ttl/10)
 
-	return &TinyLFU{
+	return &Cache{
 		lfu:    tinylfu.New[[]byte](size, 100000),
 		ttl:    ttl,
 		offset: offset,
 	}
 }
 
-type TinyLFU struct {
+type Cache struct {
 	mu     sync.Mutex
 	lfu    LFU
 	ttl    time.Duration
 	offset time.Duration
 }
 
-func (self *TinyLFU) UseRandomizedTTL(offset time.Duration) {
+func (self *Cache) UseRandomizedTTL(offset time.Duration) {
 	self.offset = offset
 }
 
-func (self *TinyLFU) Set(key string, b []byte) {
+func (self *Cache) Set(key string, b []byte) {
 	if len(b) == 0 {
 		return
 	}
@@ -54,7 +54,7 @@ func (self *TinyLFU) Set(key string, b []byte) {
 	self.lfu.Set(tinylfu.NewItemExpire(key, b, time.Now().Add(ttl)))
 }
 
-func (self *TinyLFU) Get(key string) []byte {
+func (self *Cache) Get(key string) []byte {
 	self.mu.Lock()
 	defer self.mu.Unlock()
 
@@ -65,7 +65,7 @@ func (self *TinyLFU) Get(key string) []byte {
 	return b
 }
 
-func (self *TinyLFU) Del(key string) {
+func (self *Cache) Del(key string) {
 	self.mu.Lock()
 	defer self.mu.Unlock()
 

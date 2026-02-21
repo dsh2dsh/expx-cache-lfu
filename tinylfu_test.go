@@ -14,23 +14,23 @@ import (
 
 const testKey = "mykey"
 
-func TestTinyLFU(t *testing.T) {
-	localCache := NewTinyLFU(1000, time.Minute)
-	require.NotNil(t, localCache)
+func TestCache(t *testing.T) {
+	cache := New(1000, time.Minute)
+	require.NotNil(t, cache)
 
 	const key = "key1"
 	value := []byte("value1")
 
-	localCache.Set(key, value)
-	b := localCache.Get(key)
+	cache.Set(key, value)
+	b := cache.Get(key)
 	assert.Equal(t, value, b)
 
-	localCache.Del(key)
-	b = localCache.Get(key)
+	cache.Del(key)
+	b = cache.Get(key)
 	assert.Nil(t, b)
 }
 
-func TestTinyLFU_Get_CorruptionOnExpiry(t *testing.T) {
+func TestCache_Get_CorruptionOnExpiry(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
@@ -43,12 +43,12 @@ func TestTinyLFU_Get_CorruptionOnExpiry(t *testing.T) {
 		return fmt.Sprintf("key-%00000d", i)
 	}
 
-	mycache := NewTinyLFU(1000, time.Second)
+	cache := New(1000, time.Second)
 	size := 50000
 	// Put a bunch of stuff in the cache with a TTL of 1 second
 	for i := range size {
 		key := keyName(i)
-		mycache.Set(key, []byte(strFor(i)))
+		cache.Set(key, []byte(strFor(i)))
 	}
 
 	// Read stuff for a bit longer than the TTL - that's when the corruption occurs
@@ -66,7 +66,7 @@ loop:
 			i := rand.N(size)
 			key := keyName(i)
 
-			b := mycache.Get(key)
+			b := cache.Get(key)
 			if b == nil {
 				continue loop
 			}
@@ -79,7 +79,7 @@ loop:
 	}
 }
 
-func TestNewTinyLFU_offset(t *testing.T) {
+func TestNew_offset(t *testing.T) {
 	tests := []struct {
 		ttl      time.Duration
 		expected time.Duration
@@ -100,26 +100,26 @@ func TestNewTinyLFU_offset(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.ttl.String(), func(t *testing.T) {
-			localCache := NewTinyLFU(1000, tt.ttl)
-			require.NotNil(t, localCache)
-			assert.Equal(t, tt.expected, localCache.offset)
+			cache := New(1000, tt.ttl)
+			require.NotNil(t, cache)
+			assert.Equal(t, tt.expected, cache.offset)
 		})
 	}
 }
 
-func TestTinyLFU_UseRandomizedTTL(t *testing.T) {
-	localCache := NewTinyLFU(1000, 1000*time.Second)
-	require.NotNil(t, localCache)
-	assert.Equal(t, 10*time.Second, localCache.offset)
+func TestCache_UseRandomizedTTL(t *testing.T) {
+	cache := New(1000, 1000*time.Second)
+	require.NotNil(t, cache)
+	assert.Equal(t, 10*time.Second, cache.offset)
 
-	localCache.UseRandomizedTTL(10 * time.Hour)
-	assert.Equal(t, 10*time.Hour, localCache.offset)
+	cache.UseRandomizedTTL(10 * time.Hour)
+	assert.Equal(t, 10*time.Hour, cache.offset)
 }
 
-func TestTinyLFU_Set_offset(t *testing.T) {
+func TestCache_Set_offset(t *testing.T) {
 	ttl := 10 * time.Second
-	localCache := NewTinyLFU(1000, ttl)
-	require.NotNil(t, localCache)
+	cache := New(1000, ttl)
+	require.NotNil(t, cache)
 
 	var expireAt time.Time
 	lfu := &MoqLFU{
@@ -127,16 +127,16 @@ func TestTinyLFU_Set_offset(t *testing.T) {
 			expireAt = item.ExpireAt
 		},
 	}
-	localCache.lfu = lfu
+	cache.lfu = lfu
 
 	start := time.Now().Add(ttl)
-	localCache.Set(testKey, []byte("a string"))
-	assert.WithinRange(t, expireAt, start, time.Now().Add(ttl+localCache.offset))
+	cache.Set(testKey, []byte("a string"))
+	assert.WithinRange(t, expireAt, start, time.Now().Add(ttl+cache.offset))
 }
 
-func TestTinyLFU_Set_nil(t *testing.T) {
-	localCache := NewTinyLFU(1000, 10*time.Second)
-	require.NotNil(t, localCache)
-	localCache.lfu = &MoqLFU{}
-	localCache.Set(testKey, nil)
+func TestCache_Set_nil(t *testing.T) {
+	cache := New(1000, 10*time.Second)
+	require.NotNil(t, cache)
+	cache.lfu = &MoqLFU{}
+	cache.Set(testKey, nil)
 }
