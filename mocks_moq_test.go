@@ -10,16 +10,16 @@ import (
 	"github.com/dsh2dsh/go-tinylfu"
 )
 
-// Ensure that MoqLFU does implement LFU.
+// Ensure that moqBackend does implement backend.
 // If this is not the case, regenerate this file with mockery.
-var _ LFU = &MoqLFU{}
+var _ backend = &moqBackend{}
 
-// MoqLFU is a mock implementation of LFU.
+// moqBackend is a mock implementation of backend.
 //
-//	func TestSomethingThatUsesLFU(t *testing.T) {
+//	func TestSomethingThatUsesbackend(t *testing.T) {
 //
-//		// make and configure a mocked LFU
-//		mockedLFU := &MoqLFU{
+//		// make and configure a mocked backend
+//		mockedbackend := &moqBackend{
 //			DelFunc: func(key string)  {
 //				panic("mock out the Del method")
 //			},
@@ -31,11 +31,11 @@ var _ LFU = &MoqLFU{}
 //			},
 //		}
 //
-//		// use mockedLFU in code that requires LFU
+//		// use mockedbackend in code that requires backend
 //		// and then make assertions.
 //
 //	}
-type MoqLFU struct {
+type moqBackend struct {
 	// DelFunc mocks the Del method.
 	DelFunc func(key string)
 
@@ -69,9 +69,9 @@ type MoqLFU struct {
 }
 
 // Del calls DelFunc.
-func (mock *MoqLFU) Del(key string) {
+func (mock *moqBackend) Del(key string) {
 	if mock.DelFunc == nil {
-		panic("MoqLFU.DelFunc: method is nil but LFU.Del was just called")
+		panic("moqBackend.DelFunc: method is nil but backend.Del was just called")
 	}
 	callInfo := struct {
 		Key string
@@ -87,8 +87,8 @@ func (mock *MoqLFU) Del(key string) {
 // DelCalls gets all the calls that were made to Del.
 // Check the length with:
 //
-//	len(mockedLFU.DelCalls())
-func (mock *MoqLFU) DelCalls() []struct {
+//	len(mockedbackend.DelCalls())
+func (mock *moqBackend) DelCalls() []struct {
 	Key string
 } {
 	var calls []struct {
@@ -101,16 +101,16 @@ func (mock *MoqLFU) DelCalls() []struct {
 }
 
 // ResetDelCalls reset all the calls that were made to Del.
-func (mock *MoqLFU) ResetDelCalls() {
+func (mock *moqBackend) ResetDelCalls() {
 	mock.lockDel.Lock()
 	mock.calls.Del = nil
 	mock.lockDel.Unlock()
 }
 
 // Get calls GetFunc.
-func (mock *MoqLFU) Get(key string) ([]byte, bool) {
+func (mock *moqBackend) Get(key string) ([]byte, bool) {
 	if mock.GetFunc == nil {
-		panic("MoqLFU.GetFunc: method is nil but LFU.Get was just called")
+		panic("moqBackend.GetFunc: method is nil but backend.Get was just called")
 	}
 	callInfo := struct {
 		Key string
@@ -126,8 +126,8 @@ func (mock *MoqLFU) Get(key string) ([]byte, bool) {
 // GetCalls gets all the calls that were made to Get.
 // Check the length with:
 //
-//	len(mockedLFU.GetCalls())
-func (mock *MoqLFU) GetCalls() []struct {
+//	len(mockedbackend.GetCalls())
+func (mock *moqBackend) GetCalls() []struct {
 	Key string
 } {
 	var calls []struct {
@@ -140,16 +140,16 @@ func (mock *MoqLFU) GetCalls() []struct {
 }
 
 // ResetGetCalls reset all the calls that were made to Get.
-func (mock *MoqLFU) ResetGetCalls() {
+func (mock *moqBackend) ResetGetCalls() {
 	mock.lockGet.Lock()
 	mock.calls.Get = nil
 	mock.lockGet.Unlock()
 }
 
 // Set calls SetFunc.
-func (mock *MoqLFU) Set(item *tinylfu.Item[[]byte]) {
+func (mock *moqBackend) Set(item *tinylfu.Item[[]byte]) {
 	if mock.SetFunc == nil {
-		panic("MoqLFU.SetFunc: method is nil but LFU.Set was just called")
+		panic("moqBackend.SetFunc: method is nil but backend.Set was just called")
 	}
 	callInfo := struct {
 		Item *tinylfu.Item[[]byte]
@@ -165,8 +165,8 @@ func (mock *MoqLFU) Set(item *tinylfu.Item[[]byte]) {
 // SetCalls gets all the calls that were made to Set.
 // Check the length with:
 //
-//	len(mockedLFU.SetCalls())
-func (mock *MoqLFU) SetCalls() []struct {
+//	len(mockedbackend.SetCalls())
+func (mock *moqBackend) SetCalls() []struct {
 	Item *tinylfu.Item[[]byte]
 } {
 	var calls []struct {
@@ -179,14 +179,14 @@ func (mock *MoqLFU) SetCalls() []struct {
 }
 
 // ResetSetCalls reset all the calls that were made to Set.
-func (mock *MoqLFU) ResetSetCalls() {
+func (mock *moqBackend) ResetSetCalls() {
 	mock.lockSet.Lock()
 	mock.calls.Set = nil
 	mock.lockSet.Unlock()
 }
 
 // ResetCalls reset all the calls that were made to all mocked methods.
-func (mock *MoqLFU) ResetCalls() {
+func (mock *moqBackend) ResetCalls() {
 	mock.lockDel.Lock()
 	mock.calls.Del = nil
 	mock.lockDel.Unlock()

@@ -9,12 +9,6 @@ import (
 	"github.com/dsh2dsh/go-tinylfu"
 )
 
-type LFU interface {
-	Get(key string) ([]byte, bool)
-	Set(*tinylfu.Item[[]byte])
-	Del(key string)
-}
-
 func New(size int, ttl time.Duration) *Cache {
 	const maxOffset = 10 * time.Second
 	offset := min(maxOffset, ttl/10)
@@ -28,10 +22,18 @@ func New(size int, ttl time.Duration) *Cache {
 
 type Cache struct {
 	mu     sync.Mutex
-	lfu    LFU
+	lfu    backend
 	ttl    time.Duration
 	offset time.Duration
 }
+
+type backend interface {
+	Get(key string) ([]byte, bool)
+	Set(*tinylfu.Item[[]byte])
+	Del(key string)
+}
+
+var _ backend = (*tinylfu.T[[]byte])(nil)
 
 func (self *Cache) UseRandomizedTTL(offset time.Duration) {
 	self.offset = offset

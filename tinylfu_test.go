@@ -122,7 +122,7 @@ func TestCache_Set_offset(t *testing.T) {
 	require.NotNil(t, cache)
 
 	var expireAt time.Time
-	lfu := &MoqLFU{
+	lfu := &moqBackend{
 		SetFunc: func(item *tinylfu.Item[[]byte]) {
 			expireAt = item.ExpireAt
 		},
@@ -137,6 +137,6 @@ func TestCache_Set_offset(t *testing.T) {
 func TestCache_Set_nil(t *testing.T) {
 	cache := New(1000, 10*time.Second)
 	require.NotNil(t, cache)
-	cache.lfu = &MoqLFU{}
+	cache.lfu = &moqBackend{}
 	cache.Set(testKey, nil)
 }
