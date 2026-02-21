@@ -21,7 +21,7 @@ func New(size int, ttl time.Duration) *Cache {
 }
 
 type Cache struct {
-	mu     sync.RWMutex
+	mu     sync.Mutex
 	lfu    backend
 	ttl    time.Duration
 	offset time.Duration
@@ -57,8 +57,8 @@ func (self *Cache) Set(key string, b []byte) {
 }
 
 func (self *Cache) Get(key string) []byte {
-	self.mu.RLock()
-	defer self.mu.RUnlock()
+	self.mu.Lock()
+	defer self.mu.Unlock()
 
 	b, ok := self.lfu.Get(key)
 	if !ok {
